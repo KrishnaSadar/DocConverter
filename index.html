@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOCX Question Bank Converter | 100% Client-Side for GitHub Pages</title>
+  <meta name="description" content="Fast, client-side tool to convert input_format.docx question papers into strict output_format.docx tables with formulas, OLE objects, and answer keys preserved.">
+
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="bg-grid"></div>
+
+  <main class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-badge">
+        <span class="dot"></span>
+        Strict Output Format • 100% Client-Side
+      </div>
+      <h1 class="app-title">
+        DOCX Question Bank <span class="gradient-text">Converter</span>
+      </h1>
+      <p class="app-subtitle">
+        Seamlessly converts raw questions, options, answer keys, and solutions into the strict system-ready table layout. Fast, private, and runs entirely in your browser.
+      </p>
+    </header>
+
+    <!-- Main Converter Card -->
+    <section class="glass-card upload-card" aria-labelledby="uploadSectionHeading">
+      <h2 id="uploadSectionHeading" class="sr-only" style="display:none;">Upload Document</h2>
+
+      <!-- Drop Zone -->
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" accept=".docx" style="display: none;">
+        
+        <div class="drop-zone-icon">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+        </div>
+
+        <h3 class="drop-zone-title">Drop your input .docx file here</h3>
+        <p class="drop-zone-desc">Supports standard input_format documents with questions, equations & solutions</p>
+
+        <button type="button" class="browse-btn" onclick="document.getElementById('fileInput').click()">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Browse Local Document
+        </button>
+
+        <!-- Selected File Pill -->
+        <div class="file-info-pill" id="fileInfoPill" style="display: none;">
+          <div class="file-info-left">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span id="fileName">file.docx</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="file-info-size" id="fileSize">0 KB</span>
+            <button type="button" id="removeFileBtn" style="background:none; border:none; color:#f43f5e; cursor:pointer; font-size:1.1rem;" title="Remove file">&times;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings Grid -->
+      <div class="settings-grid">
+        <div class="setting-item">
+          <label for="positiveMarks" class="setting-label">Positive Marks</label>
+          <input type="number" id="positiveMarks" class="setting-input" value="4" min="0" step="1">
+        </div>
+
+        <div class="setting-item">
+          <label for="negativeMarks" class="setting-label">Negative Marks</label>
+          <input type="number" id="negativeMarks" class="setting-input" value="1" min="0" step="1">
+        </div>
+
+        <div class="setting-item">
+          <label class="setting-label">Destination Template</label>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <input type="file" id="templateInput" accept=".docx" style="display: none;">
+            <button type="button" class="browse-btn" style="padding: 8px 12px; font-size: 0.82rem;" onclick="document.getElementById('templateInput').click()">
+              Custom Template
+            </button>
+            <span id="templateStatus" style="font-size: 0.82rem; color: var(--accent-emerald);">Built-in ready</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons Row -->
+      <div class="action-row">
+        <button type="button" class="btn-secondary" id="loadSampleBtn">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+          Try Sample Document
+        </button>
+
+        <button type="button" class="btn-primary" id="convertBtn" disabled>
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+          Convert to Output Format
+        </button>
+      </div>
+    </section>
+
+    <!-- Progress Card -->
+    <section class="glass-card progress-card" id="progressCard">
+      <div class="progress-header">
+        <span class="progress-status" id="progressStatus">Starting conversion pipeline...</span>
+        <span class="progress-percent" id="progressPercent">0%</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressBarFill"></div>
+      </div>
+    </section>
+
+    <!-- Results & Download Card -->
+    <section class="glass-card results-card" id="resultsCard">
+      <div class="results-header">
+        <div class="results-title-group">
+          <div class="check-icon-badge">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="results-title">Conversion Complete!</h3>
+            <p class="results-desc">All questions and relationships mapped strictly according to specifications.</p>
+          </div>
+        </div>
+
+        <button type="button" class="btn-download" id="downloadBtn">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Download Converted DOCX
+        </button>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-pill">
+          <span class="stat-value" id="statQuestions">0</span>
+          <span class="stat-label">Questions Converted</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-value" id="statAnswers">0</span>
+          <span class="stat-label">Answers Mapped</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-value" id="statSolutions">0</span>
+          <span class="stat-label">Solutions Transferred</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-value" id="statMedia">0</span>
+          <span class="stat-label">Media & Equations Mapped</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-value" id="statFileSize">0 KB</span>
+          <span class="stat-label">Output File Size</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Question Preview Dashboard -->
+    <section class="glass-card preview-card" id="previewCard">
+      <div class="preview-header">
+        <h3 class="preview-title">Question Bank Verification Preview</h3>
+        <div class="search-box">
+          <input type="text" id="searchQuestions" placeholder="Search questions, options...">
+        </div>
+      </div>
+      <div class="questions-list" id="questionsList"></div>
+    </section>
+
+    <!-- Strict Specification Overview -->
+    <section class="glass-card info-section">
+      <h3 class="info-title">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color:var(--accent-primary);">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Automated System Formatting Specification
+      </h3>
+      <p style="color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 12px;">
+        Each question is structured into a dedicated 10-row Word table with identical cell dimensions, borders, and keys:
+      </p>
+
+      <table class="spec-table">
+        <thead>
+          <tr>
+            <th>Row</th>
+            <th>Required Key</th>
+            <th>Value Extracted & Formatted</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>Row 0</code></td>
+            <td><strong>Question</strong></td>
+            <td>Question prompt preserving all runs, drawings, and math symbols</td>
+          </tr>
+          <tr>
+            <td><code>Row 1</code></td>
+            <td><strong>Type</strong></td>
+            <td><code>multiple_choice</code></td>
+          </tr>
+          <tr>
+            <td><code>Rows 2 - 5</code></td>
+            <td><strong>Option</strong></td>
+            <td>Extracted options (a, b, c, d) in sequential rows without option letters</td>
+          </tr>
+          <tr>
+            <td><code>Row 6</code></td>
+            <td><strong>Answer</strong></td>
+            <td>Mapped number (1 for a, 2 for b, 3 for c, 4 for d)</td>
+          </tr>
+          <tr>
+            <td><code>Row 7</code></td>
+            <td><strong>Solution</strong></td>
+            <td>Hints & step-by-step solution content with formulas & drawings intact</td>
+          </tr>
+          <tr>
+            <td><code>Row 8</code></td>
+            <td><strong>Positive Marks</strong></td>
+            <td>Default <code>4</code> (configurable in settings)</td>
+          </tr>
+          <tr>
+            <td><code>Row 9</code></td>
+            <td><strong>Negative Marks</strong></td>
+            <td>Default <code>1</code> (configurable in settings)</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>100% Client-Side DOCX Converter • Zero server storage • Hostable on GitHub Pages</p>
+    </footer>
+  </main>
+
+  <!-- Script dependencies -->
+  <!-- 1. JSZip: local copy with CDN fallback -->
+  <script src="lib/jszip.min.js"></script>
+  <script>
+    if (typeof JSZip === 'undefined') {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"><\/script>');
+    }
+  </script>
+
+  <!-- 2. Pre-packaged Template Data -->
+  <script src="template-data.js"></script>
+
+  <!-- 3. Conversion Core Engine -->
+  <script src="converter.js"></script>
+
+  <!-- 4. UI Controller -->
+  <script src="app.js"></script>
+</body>
+</html>
